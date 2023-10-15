@@ -4,8 +4,8 @@
 
 - Cloner ce dépôt:
     ```
-    git clone https://github.com/.../serv
-    cd serv/
+    git clone https://github.com/intellicarnet/serveur
+    cd serveur/
     ```
 
 - Créer un environnement virtuel:
