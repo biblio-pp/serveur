@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 from incarnet.server.config import apply_config
 
@@ -12,6 +13,12 @@ with app.app_context():
 CORS(app)
 
 db = SQLAlchemy(app)
+with app.app_context():
+    db.create_all()
+
+migrate = Migrate(app, db)
+
+import incarnet.server.commands
 
 from .helloworld.views import hello_blueprint
 app.register_blueprint(hello_blueprint)
