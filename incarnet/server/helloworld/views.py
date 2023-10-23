@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from flask.views import MethodView
+from flask_jwt_extended import jwt_required
 
 hello_blueprint = Blueprint("hello_blueprint", __name__)
 
@@ -8,6 +9,7 @@ class HelloWorldAPI(MethodView):
         return jsonify({"hello": "world"})
 
 class AuthedHelloWorldAPI(MethodView):
+    @jwt_required()
     def get(self):
         return jsonify({"hello": "world (authed)"})
 
