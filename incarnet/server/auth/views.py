@@ -22,7 +22,7 @@ class LoginAPI(MethodView):
             return jsonify({"msg": "Invalid credentials."}), 401
 
         tok = create_access_token(identity=username)
-        return jsonify({"token": tok})
+        return jsonify({"token": tok, "username": username})
 
 auth_blueprint.add_url_rule("/auth/login", view_func=LoginAPI.as_view("login_api"), methods=["POST"])
 
