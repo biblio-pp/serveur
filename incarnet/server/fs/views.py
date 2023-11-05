@@ -36,3 +36,18 @@ class FileReadAPI(MethodView):
 fs_blueprint.add_url_rule(
     "/fs/read", view_func=FileReadAPI.as_view("file_read_api"), methods=["GET"]
 )
+
+
+class FileDelAPI(MethodView):
+    @jwt_required()
+    def post(self):
+        path = request.args.get("path", "")
+        real_path = get_path(path)
+        if not real_path.is_file():
+            return jsonify({"msg": "not a file"}), 400
+        real_path.unlink()
+        return jsonify({"msg": "deleted"})
+
+fs_blueprint.add_url_rule(
+    "/fs/del", view_func=FileDelAPI.as_view("file_delete_api"), methods=["POST"]
+)
