@@ -69,3 +69,20 @@ class FileWriteAPI(MethodView):
 fs_blueprint.add_url_rule(
     "/fs/write", view_func=FileWriteAPI.as_view("file_write_api"), methods=["POST"]
 )
+
+
+class FileMoveAPI(MethodView):
+    @jwt_required()
+    def post(self):
+        path = request.args.get("path", "")
+        new_path = request.args.get("newpath", "")
+        real_path = get_path(path)
+        real_new_path = get_path(new_path)
+        if real_new_path.exists():
+            return jsonify({"msg": "already exists"}), 400
+        real_path.rename(real_new_path)
+        return jsonify({"msg": "moved"})
+
+fs_blueprint.add_url_rule(
+    "/fs/mv", view_func=FileMoveAPI.as_view("file_move_api"), methods=["POST"]
+)
