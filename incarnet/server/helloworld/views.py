@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
+from incarnet.filesystem.utils import get_root
 
 hello_blueprint = Blueprint("hello_blueprint", __name__)
 
@@ -11,7 +12,10 @@ class HelloWorldAPI(MethodView):
 class AuthedHelloWorldAPI(MethodView):
     @jwt_required()
     def get(self):
-        return jsonify({"hello": "world (authed)"})
+        return jsonify({
+            "hello": "world (authed)",
+            "path": str(get_root())
+        })
 
 hello_blueprint.add_url_rule(
     "/test/helloworld", view_func=HelloWorldAPI.as_view("hello_world_api"), methods=["GET"]

@@ -31,3 +31,6 @@ app.register_blueprint(hello_blueprint)
 
 from .auth.views import auth_blueprint
 app.register_blueprint(auth_blueprint)
+
+from .fs.views import fs_blueprint
+app.register_blueprint(fs_blueprint)

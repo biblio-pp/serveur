@@ -9,11 +9,13 @@ class BaseConfig:
     SQLALCHEMY_DATABASE_URI = sqlalchemy_base + ".db"
     BCRYPT_LOG_ROUNDS = 13
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    INCARNET_FILE_DIR = "/srv/incarnet/storage"
 
 
 class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = sqlalchemy_base + "_dev" + ".db"
     BCRYPT_LOG_ROUNDS = 4
+    INCARNET_FILE_DIR = "storage_dev"
 
 
 class ProductionConfig(BaseConfig):
