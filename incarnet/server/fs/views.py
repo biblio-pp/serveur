@@ -21,3 +21,18 @@ class FileListAPI(MethodView):
 fs_blueprint.add_url_rule(
     "/fs/ls", view_func=FileListAPI.as_view("file_list_api"), methods=["GET"]
 )
+
+
+class FileReadAPI(MethodView):
+    @jwt_required()
+    def get(self):
+        path = request.args.get("path", "")
+        real_path = get_path(path)
+        if not real_path.is_file():
+            return jsonify({"msg": "not a file"}), 400
+        data = open(real_path, mode="r").read()
+        return jsonify({"content": data})
+
+fs_blueprint.add_url_rule(
+    "/fs/read", view_func=FileReadAPI.as_view("file_read_api"), methods=["GET"]
+)
