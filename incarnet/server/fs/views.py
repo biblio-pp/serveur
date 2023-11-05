@@ -30,7 +30,8 @@ class FileReadAPI(MethodView):
         real_path = get_path(path)
         if not real_path.is_file():
             return jsonify({"msg": "not a file"}), 400
-        data = open(real_path, mode="r").read()
+        with open(real_path, mode="r") as f:
+            data = f.read()
         return jsonify({"content": data})
 
 fs_blueprint.add_url_rule(
@@ -50,4 +51,21 @@ class FileDelAPI(MethodView):
 
 fs_blueprint.add_url_rule(
     "/fs/del", view_func=FileDelAPI.as_view("file_delete_api"), methods=["POST"]
+)
+
+
+class FileWriteAPI(MethodView):
+    @jwt_required()
+    def post(self):
+        path = request.args.get("path", "")
+        txt = request.get_json().get("content", "")
+        real_path = get_path(path)
+        if real_path.is_dir():
+            return jsonify({"msg": "is a dir"}), 400
+        with open(real_path, mode="w") as f:
+            f.write(txt)
+        return jsonify({"msg": "written"})
+
+fs_blueprint.add_url_rule(
+    "/fs/write", view_func=FileWriteAPI.as_view("file_write_api"), methods=["POST"]
 )
