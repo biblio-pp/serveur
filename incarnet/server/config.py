@@ -1,5 +1,6 @@
 from os import getenv, path
 from flask import current_app
+from datetime import timedelta
 import yaml
 
 sqlalchemy_base = "sqlite:///incarnet"
@@ -10,6 +11,7 @@ class BaseConfig:
     BCRYPT_LOG_ROUNDS = 13
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     INCARNET_FILE_DIR = "/srv/incarnet/storage"
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
 
 
 class DevelopmentConfig(BaseConfig):
