@@ -20,7 +20,12 @@ def get_root():
     return path
 
 def get_path(p: str):
-    return san_path(get_root() / Path(p))
+    path = Path(p)
+    if path.is_absolute():
+        rp = Path(p).relative_to("/")
+    else:
+        rp = Path(p)
+    return san_path(get_root() / rp)
 
 def rel_path(p: Path):
     return p.relative_to(get_root())
