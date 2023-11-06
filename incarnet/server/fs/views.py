@@ -100,3 +100,17 @@ class DirCreateAPI(MethodView):
 fs_blueprint.add_url_rule(
     "/fs/mkdir", view_func=DirCreateAPI.as_view("dir_create_api"), methods=["POST"]
 )
+
+class TouchAPI(MethodView):
+    @jwt_required()
+    def post(self):
+        path = request.args.get("path", "")
+        real_path = get_path(path)
+        if real_path.is_dir():
+            return jsonify({"msg": "is dir"}), 400
+        real_path.touch()
+        return jsonify({"msg": "touched"})
+
+fs_blueprint.add_url_rule(
+    "/fs/touch", view_func=TouchAPI.as_view("touch_api"), methods=["POST"]
+)
