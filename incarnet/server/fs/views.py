@@ -86,3 +86,17 @@ class FileMoveAPI(MethodView):
 fs_blueprint.add_url_rule(
     "/fs/mv", view_func=FileMoveAPI.as_view("file_move_api"), methods=["POST"]
 )
+
+class DirCreateAPI(MethodView):
+    @jwt_required()
+    def post(self):
+        path = request.args.get("path", "")
+        real_path = get_path(path)
+        if real_path.exists():
+            return jsonify({"msg": "already exists"}), 400
+        real_path.mkdir()
+        return jsonify({"msg": "created"})
+
+fs_blueprint.add_url_rule(
+    "/fs/mkdir", view_func=DirCreateAPI.as_view("dir_create_api"), methods=["POST"]
+)
