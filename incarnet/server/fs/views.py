@@ -2,7 +2,7 @@ from pathlib import Path
 from flask import Blueprint, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
-from incarnet.filesystem.utils import get_path, rel_path
+from incarnet.filesystem.utils import get_path, get_root, rel_path
 
 fs_blueprint = Blueprint("fs_blueprint", __name__)
 
@@ -118,4 +118,29 @@ class TouchAPI(MethodView):
 
 fs_blueprint.add_url_rule(
     "/fs/touch", view_func=TouchAPI.as_view("touch_api"), methods=["POST"]
+)
+
+class SearchAPI(MethodView):
+    @jwt_required()
+    def get(self):
+        query = request.args.get("query", None)
+        if not query:
+            return jsonify({"msg": "no query"}), 400
+
+        files = []
+
+        root_path = get_root()
+        for i in root_path.glob('**/*'):
+            if i.is_file():
+                with i.open('r') as f:
+                    if query.lower() in f.read().lower():
+                        files.append(i)
+                        continue
+            if query.lower() in str(i).lower():
+                files.append(i)
+
+        return jsonify({"msg": "success", "data": [str(rel_path(i)) for i in files]})
+
+fs_blueprint.add_url_rule(
+    "/fs/search", view_func=SearchAPI.as_view("search_api"), methods=["GET"]
 )
