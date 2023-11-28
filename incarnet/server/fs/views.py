@@ -136,10 +136,10 @@ class SearchAPI(MethodView):
                     if query.lower() in f.read().lower():
                         files.append(i)
                         continue
-            if query.lower() in str(i).lower():
+            if query.lower() in str(rel_path(i)).lower():
                 files.append(i)
 
-        return jsonify({"msg": "success", "data": [str(rel_path(i)) for i in files]})
+        return jsonify({"msg": "success", "data": [{"path": str(rel_path(i)), "type": "file" if i.is_file() else "dir"} for i in files]})
 
 fs_blueprint.add_url_rule(
     "/fs/search", view_func=SearchAPI.as_view("search_api"), methods=["GET"]
