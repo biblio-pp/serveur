@@ -1,4 +1,5 @@
 JWT_SECRET_KEY: ""
+OPENAI_API_KEY: ""
 
 # INCARNET_FILE_DIR: /srv/incarnet/storage
 # BCRYPT_LOG_ROUNDS: 13
