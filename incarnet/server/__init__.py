@@ -19,7 +19,7 @@ CORS(app)
 
 db = SQLAlchemy(app)
 
-model = llm.get_model("gpt-3.5-turbo")
+model = llm.get_model(app.config.get("LLM_MODEL"))
 
 with app.app_context():
     db.create_all()

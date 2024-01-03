@@ -7,9 +7,9 @@ from flask import Blueprint, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from incarnet.filesystem.utils import get_root, rel_path
-from incarnet.server.ai.utils import get_user_collection
+from incarnet.server.ai.utils import get_user_collection, query_db
 from incarnet.server.models import User, db
-from incarnet.server import chroma, sock
+from incarnet.server import chroma, sock, model
 import hashlib
 
 ai_blueprint = Blueprint("ai_blueprint", __name__)
@@ -54,29 +54,22 @@ ai_blueprint.add_url_rule(
     "/ai/scan", view_func=ScanAPI.as_view("scan_api"), methods=["POST"]
 )
 
-class QueryAPI(MethodView):
-    @jwt_required()
-    def get(self):
-        query: str | None = request.args.get("query", None)
-        if not query:
-            return jsonify({
-                "msg": "no query"
-            }), 400
-
-        user_collection = get_user_collection()
-        res = user_collection.query(query_texts=[query], n_results=10)
-
-        return jsonify(res)
-
-ai_blueprint.add_url_rule(
-    "/ai/query", view_func=QueryAPI.as_view("query_api"), methods=["GET"]
-)
-
 @sock.route("/ai/convo")
+@jwt_required()
 def convo(ws):
-    import time
+    c = model.conversation()
+
+    first_resp: bool = True
+
     while True:
-        data = ws.receive()
-        ws.send("thinking...")
-        time.sleep(3)
-        ws.send("response: " + data)
+        data: str = ws.receive()
+        if first_resp:
+            docs = query_db(data)
+            sys_prompt = f"Tu es un tuteur. Aide l'élève à comprendre la matière. Sois concis. Ci-joint sont des documents qui pourraient t'aider:\n" \
+                + "\n\n---\n\n".join(docs["documents"][0])
+            resp = c.prompt(data, system=sys_prompt)
+            ws.send(resp.text())
+            first_resp = False
+        else:
+            resp = c.prompt(data)
+            ws.send(resp.text())

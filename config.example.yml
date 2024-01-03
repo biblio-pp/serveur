@@ -1,5 +1,6 @@
 JWT_SECRET_KEY: ""
 OPENAI_API_KEY: ""
+LLM_MODEL: "gpt-3.5-turbo"
 
 # INCARNET_FILE_DIR: /srv/incarnet/storage
 # BCRYPT_LOG_ROUNDS: 13

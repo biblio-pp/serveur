@@ -15,3 +15,9 @@ def get_user_collection() -> Collection:
     return chroma.get_or_create_collection(name=user.username,
                                            embedding_function=embedding_functions.OpenAIEmbeddingFunction(model_name="text-embedding-ada-002", api_key=current_app.config.get("OPENAI_API_KEY", ""))
                                            )
+
+def query_db(query: str):
+    user_collection = get_user_collection()
+    res = user_collection.query(query_texts=[query], n_results=1)
+
+    return res
