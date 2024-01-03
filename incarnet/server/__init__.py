@@ -1,10 +1,12 @@
 import chromadb
+import llm
 from flask import Flask
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
+from flask_sock import Sock
 
 from incarnet.server.config import apply_config
 
@@ -17,9 +19,15 @@ CORS(app)
 
 db = SQLAlchemy(app)
 
+model = llm.get_model("gpt-3.5-turbo")
+
 with app.app_context():
     db.create_all()
     chroma = chromadb.PersistentClient(path=app.instance_path + "/chroma/")
+
+    model.key = app.config.get("OPENAI_API_KEY", "")
+
+sock = Sock(app)
 
 bcrypt = Bcrypt(app)
 

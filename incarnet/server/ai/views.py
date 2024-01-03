@@ -9,7 +9,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from incarnet.filesystem.utils import get_root, rel_path
 from incarnet.server.ai.utils import get_user_collection
 from incarnet.server.models import User, db
-from incarnet.server import chroma
+from incarnet.server import chroma, sock
 import hashlib
 
 ai_blueprint = Blueprint("ai_blueprint", __name__)
@@ -71,3 +71,12 @@ class QueryAPI(MethodView):
 ai_blueprint.add_url_rule(
     "/ai/query", view_func=QueryAPI.as_view("query_api"), methods=["GET"]
 )
+
+@sock.route("/ai/convo")
+def convo(ws):
+    import time
+    while True:
+        data = ws.receive()
+        ws.send("thinking...")
+        time.sleep(3)
+        ws.send("response: " + data)
