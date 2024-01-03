@@ -3,7 +3,7 @@ from datetime import timezone
 import os
 from pathlib import Path
 from chromadb import Collection
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from incarnet.filesystem.utils import get_root, rel_path
@@ -63,6 +63,11 @@ def convo(ws):
 
     while True:
         data: str = ws.receive()
+
+        if current_app.config.get("DUMMY_MODEL", False):
+            ws.send(f"recv: {data}")
+            continue
+
         if first_resp:
             docs = query_db(data)
             sys_prompt = f"Tu es un tuteur. Aide l'élève à comprendre la matière. Sois concis. Ci-joint sont des documents qui pourraient t'aider:\n" \
