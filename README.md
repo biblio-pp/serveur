@@ -15,5 +15,5 @@
 
 - Activer le serveur:
     ```
-    flask --app incarnet.server run
+    FLASK_APP=server.py python3 server.py
     ```

@@ -6,7 +6,7 @@ from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-from flask_sock import Sock
+from flask_socketio import SocketIO
 
 from incarnet.server.config import apply_config
 
@@ -27,9 +27,9 @@ with app.app_context():
 
     model.key = app.config.get("OPENAI_API_KEY", "")
 
-sock = Sock(app)
-
 bcrypt = Bcrypt(app)
+
+socketio = SocketIO(app, cors_allowed_origins=["http://localhost:8000"])
 
 jwt =  JWTManager(app)
 

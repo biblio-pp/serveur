@@ -3,14 +3,16 @@ from datetime import timezone
 import os
 from pathlib import Path
 from chromadb import Collection
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, g
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import decode_token, get_jwt_identity, jwt_required
 from incarnet.filesystem.utils import get_root, rel_path
 from incarnet.server.ai.utils import get_user_collection, query_db
 from incarnet.server.models import User, db
-from incarnet.server import chroma, sock, model
+from incarnet.server import chroma, socketio, model, jwt
+from flask_socketio import Namespace, emit
 import hashlib
+import functools
 
 ai_blueprint = Blueprint("ai_blueprint", __name__)
 
@@ -54,27 +56,29 @@ ai_blueprint.add_url_rule(
     "/ai/scan", view_func=ScanAPI.as_view("scan_api"), methods=["POST"]
 )
 
-@sock.route("/ai/convo")
+@socketio.on("connect")
+def connect_handler():
+    print(request.headers)
+    print("conn")
+
+@socketio.on("convo")
 @jwt_required()
-def convo(ws):
+def convo(data: str):
+    print("convo")
     c = model.conversation()
 
     first_resp: bool = True
 
-    while True:
-        data: str = ws.receive()
+    if current_app.config.get("DUMMY_MODEL", False):
+        return data
 
-        if current_app.config.get("DUMMY_MODEL", False):
-            ws.send(f"recv: {data}")
-            continue
-
-        if first_resp:
-            docs = query_db(data)
-            sys_prompt = f"Tu es un tuteur. Aide l'élève à comprendre la matière. Sois concis. Ci-joint sont des documents qui pourraient t'aider:\n" \
-                + "\n\n---\n\n".join(docs["documents"][0])
-            resp = c.prompt(data, system=sys_prompt)
-            ws.send(resp.text())
-            first_resp = False
-        else:
-            resp = c.prompt(data)
-            ws.send(resp.text())
+    if first_resp:
+        docs = query_db(data)
+        sys_prompt = f"Tu es un tuteur. Aide l'élève à comprendre la matière. Sois concis. Ci-joint sont des documents qui pourraient t'aider:\n" \
+            + "\n\n---\n\n".join(docs["documents"][0])
+        resp = c.prompt(data, system=sys_prompt)
+        first_resp = False
+        return resp.text()
+    else:
+        resp = c.prompt(data)
+        return resp.text()
