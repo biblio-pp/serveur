@@ -61,24 +61,33 @@ def connect_handler():
     print(request.headers)
     print("conn")
 
+convs = {}
+
 @socketio.on("convo")
 @jwt_required()
 def convo(data: str):
     print("convo")
-    c = model.conversation()
 
-    first_resp: bool = True
+    global convs
+    if convs.get(request.sid) is None:
+        convs[request.sid] = dict(conv=model.conversation(), idx=0)
+    else:
+        convs[request.sid]["idx"] += 1
+
+    first_resp: bool = convs[request.sid]["idx"] == 0
 
     if current_app.config.get("DUMMY_MODEL", False):
-        return data
+        socketio.emit("convo", data + (" (first)" if first_resp else " (cont)"))
+        first_resp = False
+        return
 
     if first_resp:
         docs = query_db(data)
-        sys_prompt = f"Tu es un tuteur. Aide l'élève à comprendre la matière. Sois concis. Ci-joint sont des documents qui pourraient t'aider:\n" \
+        sys_prompt = f"Tu es un tuteur. Aide l'élève à comprendre la matière. Sois aussi concis que possible, n'utilisant que quelques mots. Ci-joint sont des documents qui pourraient t'aider:\n" \
             + "\n\n---\n\n".join(docs["documents"][0])
-        resp = c.prompt(data, system=sys_prompt)
+        resp = convs[request.sid]["conv"].prompt(data, system=sys_prompt)
         first_resp = False
-        return resp.text()
+        socketio.emit("convo", resp.text())
     else:
-        resp = c.prompt(data)
-        return resp.text()
+        resp = convs[request.sid]["conv"].prompt(data)
+        socketio.emit("convo", resp.text())
